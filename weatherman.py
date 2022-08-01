@@ -4,7 +4,7 @@ import os.path
 
 STARTING_YEAR = 1996
 ENDING_YEAR = 2011
-TOTAL_YEARS = 2011-1996
+TOTAL_YEARS = ENDING_YEAR-STARTING_YEAR
 FILES_PREFIX = "lahore_weather_"
 MONTH_NAMES = ['Jan', 'Feb', 'Mar', 'Apr', 'May',
                'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
@@ -83,6 +83,7 @@ def fetchRequiredReport(reportType):
     minTemp, minHumidity = 100, 100
     monthlyReport = None
     yearlyRecord = None
+    recordFound = False
 
     for year in range(STARTING_YEAR, ENDING_YEAR+1):
         for monthIndex in range(len(MONTH_NAMES)):
@@ -93,6 +94,8 @@ def fetchRequiredReport(reportType):
                 fileData.readline().split(',')
                 weatherData = fileData.readlines()
                 monthlyReport = getReportForMonth(weatherData, reportType)
+                if(monthlyReport == None):
+                    break
                 if(reportType == 2):
                     if(monthlyReport['maxTemp'] > maxTemp):
                         yearlyRecord = {
@@ -107,10 +110,12 @@ def fetchRequiredReport(reportType):
             except:
                 continue
         if(reportType == 2):
-            report.append(yearlyRecord)
+            if(monthlyReport):
+                report.append(yearlyRecord)
         else:
-            report.append({'year': monthlyReport['date'], 'maxTemp': maxTemp, 'minTemp': minTemp,
-                           'maxHumidity': maxHumidity, 'minHumidity': minHumidity})
+            if(monthlyReport):
+                report.append({'year': monthlyReport['date'], 'maxTemp': maxTemp, 'minTemp': minTemp,
+                               'maxHumidity': maxHumidity, 'minHumidity': minHumidity})
         maxTemp = -100
         maxHumidity = 0
         minTemp, minHumidity = 100, 100
@@ -119,11 +124,13 @@ def fetchRequiredReport(reportType):
 
 def getReportOne():
     reportOne = fetchRequiredReport(1)
+    reportOne = [i for i in reportOne if i]
     displayReportOne(reportOne)
 
 
 def getReportTwo():
     reportTwo = fetchRequiredReport(2)
+    reportTwo = [i for i in reportTwo if i]
     displayReportTwo(reportTwo)
 
 
