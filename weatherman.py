@@ -2,17 +2,20 @@ import datetime
 import sys
 import os.path
 
-STARTING_YEAR = 1996
-ENDING_YEAR = 2011
+STARTING_YEAR = 1996#Specified starting year
+ENDING_YEAR = 2011#Specified ending year
 TOTAL_YEARS = ENDING_YEAR-STARTING_YEAR
-FILES_PREFIX = "lahore_weather_"
+FILES_PREFIX = "lahore_weather_"#Each file has a name prefix
+
+#Month names as per files. Could have also used Calender library
 MONTH_NAMES = ['Jan', 'Feb', 'Mar', 'Apr', 'May',
                'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
-DATE_INDEX = 0
-MAX_TEMP_INDEX = 1
-MIN_TEMP_INDEX = 3
-MAX_HUMIDITY_INDEX = 7
-MIN_HUMIDITY_INDEX = 9
+
+DATE_INDEX = 0#Date index in the file data
+MAX_TEMP_INDEX = 1#Maximum temperature index in the file data
+MIN_TEMP_INDEX = 3#Minimum Temperature index in the file data
+MAX_HUMIDITY_INDEX = 7#maximum humidity index in the file data
+MIN_HUMIDITY_INDEX = 9#minimum humidity index in the file data
 
 
 def displayReportOne(report):
@@ -39,6 +42,9 @@ def displayReportTwo(report):
             data['date'].split('-')[0], dayDate, data['maxTemp']))
 
 
+#Parameters:
+#   weatherData: Gets the weather data list of string as a parameter
+#   report type: Which report is needed by the user. 1 or 2
 def getReportForMonth(weatherData, reportType):
     maxTemp = -100
     maxHumidity = 0
@@ -48,6 +54,7 @@ def getReportForMonth(weatherData, reportType):
     monthlyRecord = None
 
     for index in range(len(weatherData)-1):
+        #Each record is lined and comma separated
         date = weatherData[index].split(',')[DATE_INDEX]
         dailyMaxTemp = weatherData[index].split(',')[MAX_TEMP_INDEX]
         dailyMinTemp = weatherData[index].split(',')[MIN_TEMP_INDEX]
@@ -55,12 +62,12 @@ def getReportForMonth(weatherData, reportType):
         dailyMinHumidity = weatherData[index].split(',')[MIN_HUMIDITY_INDEX]
 
         if(reportType == 2):
-            if(date.strip() == '' or dailyMaxTemp.strip() == ''):
+            if(date.strip() == '' or dailyMaxTemp.strip() == ''):#Check if the required report data fields are empty
                 continue
             if(int(dailyMaxTemp) > maxTemp):
                 maxTemp = int(dailyMaxTemp)
                 monthlyRecord = {
-                    'date': date, 'maxTemp': int(dailyMaxTemp)}
+                    'date': date, 'maxTemp': int(dailyMaxTemp)}#Save the temperature if it is maximum for the given year
         else:
             if(date.strip() == '' or dailyMaxTemp.strip() == '' or dailyMinTemp.strip() == '' or dailyMaxHumidity.strip() == '' or dailyMinHumidity.strip() == ''):
                 continue
@@ -77,32 +84,31 @@ def getReportForMonth(weatherData, reportType):
 
 
 def fetchRequiredReport(reportType):
-    report = []
-    maxTemp = -100
-    maxHumidity = 0
+    report = []#List to hold the required records
+    maxTemp = -100#Minimum weather temperature taken
+    maxHumidity = 0#Humidity is between 0 to 100%
     minTemp, minHumidity = 100, 100
     monthlyReport = None
     yearlyRecord = None
-    recordFound = False
 
     for year in range(STARTING_YEAR, ENDING_YEAR+1):
         for monthIndex in range(len(MONTH_NAMES)):
             try:
                 fileData = open(
                     f"{sys.argv[2]}/{FILES_PREFIX}{year}_{MONTH_NAMES[monthIndex]}.txt")
-                fileData.readline()
+                fileData.readline()#Empty line at the start. Move the file cursor to the next line
                 fileData.readline().split(',')
-                weatherData = fileData.readlines()
-                monthlyReport = getReportForMonth(weatherData, reportType)
+                weatherData = fileData.readlines()#Read the rest of the lines as they all contains the data
+                monthlyReport = getReportForMonth(weatherData, reportType)#Receive monthly report depending upon the required report type
                 if(monthlyReport == None):
                     break
                 if(reportType == 2):
                     if(monthlyReport['maxTemp'] > maxTemp):
                         yearlyRecord = {
-                            'date': monthlyReport['date'], 'maxTemp': monthlyReport['maxTemp']}
+                            'date': monthlyReport['date'], 'maxTemp': monthlyReport['maxTemp']}#Store the temperature as a max if the monthly temperature has greater temperature than the Previous months
                 else:
-                    maxTemp = max(monthlyReport['maxTemp'], maxTemp)
-                    minTemp = min(monthlyReport['minTemp'], minTemp)
+                    maxTemp = max(monthlyReport['maxTemp'], maxTemp)#Get max temperature
+                    minTemp = min(monthlyReport['minTemp'], minTemp)#Minimum
                     minHumidity = min(
                         monthlyReport['minHumidity'], minHumidity)
                     maxHumidity = max(
@@ -135,8 +141,8 @@ def getReportTwo():
 
 
 def driver():
-    if(len(sys.argv) == 3):
-        if(not os.path.isdir(f"{sys.argv[2]}")):
+    if(len(sys.argv) == 3):#check if the user has entered 3 arguments.
+        if(not os.path.isdir(f"{sys.argv[2]}")):#Checking if the data directory that the user has entered exists
             print("No record directory found!")
             return
         if(sys.argv[1] == '1'):
